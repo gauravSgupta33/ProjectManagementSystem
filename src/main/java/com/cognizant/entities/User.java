@@ -65,8 +65,8 @@ public class User {
 	 *            The last name of the created user.
 	 * @return A new Builder instance.
 	 */
-	public static UserBuilder getBuilder(String firstName, String lastName) {
-		return new UserBuilder(firstName, lastName);
+	public static UserBuilder getBuilder(String firstName, String lastName, int employeeId) {
+		return new UserBuilder(firstName, lastName, employeeId);
 	}
 
 	/**
@@ -109,10 +109,11 @@ public class User {
 		 * @param lastName
 		 *            The last name of the created User object.
 		 */
-		UserBuilder(String firstName, String lastName) {
+		UserBuilder(String firstName, String lastName, int employeeId) {
 			built = new User();
 			built.firstName = firstName;
 			built.lastName = lastName;
+			built.empId = employeeId;
 		}
 
 		/**
