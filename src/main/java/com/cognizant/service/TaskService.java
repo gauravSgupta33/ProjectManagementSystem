@@ -1,5 +1,6 @@
 package com.cognizant.service;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,25 +38,66 @@ public class TaskService {
 		this.taskRepository = taskRepository;
 	}
 
+	
+	private java.util.Date convertFromSQLDateToJAVADate(
+            java.sql.Date sqlDate) {
+        java.util.Date javaDate = null;
+        if (sqlDate != null) {
+            javaDate = new Date(sqlDate.getTime());
+        }
+        return javaDate;
+    }
+	
+	private boolean between(Date date, Date dateStart, Date dateEnd) {
+		
+	    if (date != null && dateStart != null && dateEnd != null) {
+			java.util.Date myDate = convertFromSQLDateToJAVADate(date);
+			java.util.Date utilStart = convertFromSQLDateToJAVADate(dateStart);
+			java.util.Date utilEnd = convertFromSQLDateToJAVADate(dateEnd);
+			
+
+	    	if(myDate.compareTo(utilStart) == 0) {
+	    		return true;
+	    	} else if( myDate.compareTo(utilEnd) == 0) {
+	    		return true;
+	    	}
+	    	
+	        if (myDate.after(utilStart) && myDate.before(utilEnd)) {
+	            return true;
+	        }
+	        else {
+	            return false;
+	        }
+	    }
+	    return false;
+	}
 	public Task addTask(Task task) throws ResourceNotFoundException {
 		User user = userService.findById(task.getUser().getId());
 		Project project = projectService.findById(task.getProject().getProjectId());
 
-		if (task.getProject().getStartDate() != null) {
-			if (task.getStartDate().before(task.getProject().getStartDate())
-					|| task.getEndDate().before(task.getProject().getStartDate())) {
-				throw new ResourceNotFoundException("Task start or end date should between Project's start date [ "
-						+ project.getStartDate() + " ] and End date [ " + project.getEndDate() + "] ");
-			}
-		}
-
-		if (task.getProject().getEndDate() != null) {
-			if (task.getStartDate().after(task.getProject().getEndDate())
-					|| task.getEndDate().after(task.getProject().getEndDate())) {
-				throw new ResourceNotFoundException("Task start or end date should between Project's start date [ "
-						+ project.getStartDate() + " ] and End date [ " + project.getEndDate() + "] ");
-			}
-		}
+//		if (task.getProject().getStartDate() != null && task.getProject().getEndDate() >) {
+//			if (task.getStartDate().before(task.getProject().getStartDate())
+//					|| task.getStartDate().after(task.getProject().getEndDate())) {
+//				throw new ResourceNotFoundException("Task start or end date should between Project's start date [ "
+//						+ project.getStartDate() + " ] and End date [ " + project.getEndDate() + "] ");
+//			}
+//		}
+//
+//		if (task.getProject().getEndDate() != null) {
+//			if (task.getEndDate().before(task.getProject().getStartDate())
+//					|| task.getEndDate().after(task.getProject().getEndDate())) {
+//				throw new ResourceNotFoundException("Task start or end date should between Project's start date [ "
+//						+ project.getStartDate() + " ] and End date [ " + project.getEndDate() + "] ");
+//			}
+//		}
+		if(!between(task.getStartDate(), project.getStartDate(), project.getEndDate())) {
+			throw new ResourceNotFoundException("Task start or end date should between Project's start date [ "
+			+ project.getStartDate() + " ] and End date [ " + project.getEndDate() + "] ");
+			
+		} else if(!between(task.getEndDate(), project.getStartDate(), project.getEndDate())) {
+			throw new ResourceNotFoundException("Task start or end date should between Project's start date [ "
+			+ project.getStartDate() + " ] and End date [ " + project.getEndDate() + "] ");
+		} 
 
 		task.setUser(user);
 		task.setProject(project);
@@ -84,19 +126,32 @@ public class TaskService {
 	}
 
 	public Task updateTask(int taskId, Task taskDetails) throws ResourceNotFoundException {
-		if (taskDetails.getProject().getStartDate() != null) {
-			if (taskDetails.getStartDate().before(taskDetails.getProject().getStartDate())
-					|| taskDetails.getEndDate().before(taskDetails.getProject().getStartDate())) {
-				throw new ResourceNotFoundException("Task start or end date cannot be before start date of Project");
-			}
-		}
+//		if (taskDetails.getProject().getStartDate() != null) {
+//			if (taskDetails.getStartDate().before(taskDetails.getProject().getStartDate())
+//					|| taskDetails.getEndDate().before(taskDetails.getProject().getStartDate())) {
+//				throw new ResourceNotFoundException("Task start or end date cannot be before start date of Project");
+//			}
+//		}
+//
+//		if (taskDetails.getProject().getEndDate() != null) {
+//			if (taskDetails.getStartDate().after(taskDetails.getProject().getEndDate())
+//					|| taskDetails.getEndDate().after(taskDetails.getProject().getEndDate())) {
+//				throw new ResourceNotFoundException("Task start or end date cannot be after End date of Project");
+//			}
+//		}
+		
+		
+		Project project = projectService.findById(taskDetails.getProject().getProjectId());
+		
+		if(!between(taskDetails.getStartDate(), project.getStartDate(), project.getEndDate())) {
+			throw new ResourceNotFoundException("taskDetails start or end date should between taskDetails.getProject()'s start date [ "
+			+ project.getStartDate() + " ] and End date [ " + project.getEndDate() + "] ");
+			
+		} else if(!between(taskDetails.getEndDate(), project.getStartDate(), project.getEndDate())) {
+			throw new ResourceNotFoundException("taskDetails start or end date should between taskDetails.getProject()'s start date [ "
+			+ project.getStartDate() + " ] and End date [ " + project.getEndDate() + "] ");
+		} 
 
-		if (taskDetails.getProject().getEndDate() != null) {
-			if (taskDetails.getStartDate().after(taskDetails.getProject().getEndDate())
-					|| taskDetails.getEndDate().after(taskDetails.getProject().getEndDate())) {
-				throw new ResourceNotFoundException("Task start or end date cannot be after End date of Project");
-			}
-		}
 		Task task = taskRepository.findById(taskId)
 				.orElseThrow(() -> new ResourceNotFoundException("Task with ID " + taskId + " Not Found"));
 

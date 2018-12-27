@@ -10,8 +10,6 @@ import javax.persistence.Transient;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 
-import com.cognizant.entities.ParentTask.ParentTaskBuilder;
-
 @Entity
 @Table(name = "parent_task")
 public class ParentTask {
