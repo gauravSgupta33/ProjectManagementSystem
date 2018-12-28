@@ -23,6 +23,7 @@ import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import com.cognizant.entities.ParentTask;
+import com.cognizant.exception.AlreadyExistsException;
 import com.cognizant.repository.ParentTaskRepository;
 import com.cognizant.repository.ProjectRepository;
 import com.cognizant.repository.TaskRepository;
@@ -120,6 +121,52 @@ public class ParentTaskControllerTest {
 		String expected = "{\"parent_ID\":1,\"parent_task\":\"ParentTask\"}";
 		JSONAssert.assertEquals(expected, result.getResponse().getContentAsString(), false);
 }
+	
+	
+	@Test
+	public void testAddParentTaskDuplicateCheck() throws Exception {
+
+		mockParentTask.setParent_ID(1);
+		mockParentTask.setParent_task("ParentTask");
+
+		List<ParentTask> list = new ArrayList<ParentTask>();
+		list.add(mockParentTask);
+
+		Mockito.when(parentTaskRepository.findAll()).thenReturn(list);
+
+		Mockito.when(parentTaskService.addParentTask(Mockito.any(ParentTask.class))).thenThrow(AlreadyExistsException.class);
+
+		//RequestBuilder requestBuilder = MockMvcRequestBuilders.get("/createParentTask").accept(MediaType.APPLICATION_JSON);
+		
+		// Send course as body to /students/Student1/courses
+				RequestBuilder requestBuilder = MockMvcRequestBuilders
+						.post("/createParentTask")
+						.accept(MediaType.APPLICATION_JSON).content(exampleParentTask)
+						.contentType(MediaType.APPLICATION_JSON);
+
+		MvcResult result = mockMvc.perform(requestBuilder).andReturn();
+
+		System.out.println(result.getResponse());
+
+		//String expected = "[{\"parent_ID\":1,\"parent_task\":\"ParentTask\"}]";
+		//JSONAssert.assertEquals(expected, result.getResponse().getContentAsString(), false);
+		
+		
+
+		MockHttpServletResponse response = result.getResponse();
+		System.out.println(result.getResolvedException().getClass().toString());
+
+		Thread.sleep(1000);
+		//int errorCode = ;
+		assertEquals(HttpStatus.NOT_FOUND.value(), response.getStatus());
+		assertEquals("class com.cognizant.exception.AlreadyExistsException", result.getResolvedException().getClass().toString());
+ 
+//		assertEquals("http://localhost:9080/createParentTask/1",
+//				response.getHeader(HttpHeaders.LOCATION));
+		//String expected = "{\"parent_ID\":1,\"parent_task\":\"ParentTask\"}";
+		//JSONAssert.assertEquals(expected, result.getResponse().getContentAsString(), false);
+}
+
 
 
 }
