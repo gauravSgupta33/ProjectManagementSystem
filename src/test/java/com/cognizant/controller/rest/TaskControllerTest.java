@@ -83,7 +83,7 @@ public class TaskControllerTest {
 		mockTask = new Task();
 		mockProject = new Project();
 		mockProject.setProjectId(1);
-		mockProject.setStartDate(new java.sql.Date(System.currentTimeMillis()));
+		mockProject.setStartDate(new java.sql.Date(c.getTimeInMillis()));
 		mockProject.setPriority(10);
 		mockProject.setProjectName("First Project");
 		mockTask.setProject(mockProject);
@@ -99,9 +99,9 @@ public class TaskControllerTest {
 		mockTask.setStatus(0);
 		mockTask.setTaskName("New Task");
 		mockTask.setTaskId(1);
-		mockTask.setStartDate(new java.sql.Date(System.currentTimeMillis()));
-		mockTask.setEndDate(new java.sql.Date(System.currentTimeMillis()));
-		mockProject.setEndDate(new java.sql.Date(System.currentTimeMillis()));
+		mockTask.setStartDate(new java.sql.Date(c.getTimeInMillis()));
+		mockTask.setEndDate(new java.sql.Date(c.getTimeInMillis()));
+		mockProject.setEndDate(new java.sql.Date(c.getTimeInMillis()));
 
 	}
 
