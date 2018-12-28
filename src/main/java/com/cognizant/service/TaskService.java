@@ -21,17 +21,14 @@ import com.cognizant.vo.TaskCounterVO;
 @Service("taskService")
 public class TaskService {
 
-	@Autowired
 	UserService userService;
 
-	@Autowired
 	ProjectService projectService;
 
-	@Autowired
 	TaskRepository taskRepository;
 	
 	@Autowired
-	public void setTaskService(ProjectService projectService, UserService userService, TaskRepository taskRepository) {
+	public void setTaskRepository(ProjectService projectService, UserService userService, TaskRepository taskRepository) {
 		this.projectService = projectService;
 		this.userService = userService;
 		this.taskRepository = taskRepository;
@@ -116,43 +113,6 @@ public class TaskService {
 		final Task updatedTask = taskRepository.save(task);
 		return updatedTask;
 	}
-
-	// public Map<Integer, TaskCounterVO> getTaskCountAndStatusByPrjectId(int
-	// projectId) {
-	// List<Object> objectList =
-	// taskRepository.getTaskCountAndStatusByPrjectId(projectId);
-	// return createMapFromObjectList(objectList);
-	// }
-
-	// public Map<Integer, TaskCounterVO>
-	// getTotalTaskAndCompletedCountByProject(int projectId) {
-	// List<Object> objectList =
-	// taskRepository.getTotalTaskCountAndCompletedStatusByProject(projectId);
-	// return createMapFromObjectList(objectList);
-	// }
-	//
-	// public Map<Integer, TaskCounterVO>
-	// getTaskAndCompletedCountGroupByProject() {
-	// List<Object> objectList =
-	// taskRepository.getTaskCountAndCompletedStatusGroupByProject();
-	// return createMapFromObjectList(objectList);
-	// }
-	//
-	// private Map<Integer, TaskCounterVO> createMapFromObjectList(List<Object>
-	// objectList) {
-	// Map<Integer, TaskCounterVO> map = new LinkedHashMap<Integer,
-	// TaskCounterVO>();
-	// for(Object obj : objectList) {
-	// Object [] val = (Object[]) obj;
-	// TaskCounterVO tCounterVO = new TaskCounterVO();
-	// tCounterVO.setTaskCount(Integer.valueOf(val[0] + ""));
-	// tCounterVO.setProjectId(Integer.valueOf(val[1] + ""));
-	// tCounterVO.setCompletedCount(Integer.valueOf(val[2] + ""));
-	// map.put(tCounterVO.getProjectId(), tCounterVO);
-	// }
-	// return map;
-	//
-	// }
 
 	public List<TaskCounterVO> getTotalTaskAndCompletedCountByProject(int projectId) {
 		List<Object> objectList = taskRepository.getTotalTaskCountAndCompletedStatusByProject(projectId);

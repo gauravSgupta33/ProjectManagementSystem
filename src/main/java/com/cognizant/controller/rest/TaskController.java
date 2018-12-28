@@ -1,7 +1,6 @@
 package com.cognizant.controller.rest;
 
 import java.util.List;
-import java.util.Map;
 
 import javax.validation.Valid;
 
@@ -23,8 +22,12 @@ import com.cognizant.vo.TaskCounterVO;
 @RestController
 @CrossOrigin
 public class TaskController {
-	@Autowired
 	private TaskService taskService;
+	
+	@Autowired
+	public void setTaskService(TaskService taskService) {
+		this.taskService = taskService;
+	}
 	
 	@GetMapping("/Tasks")
     public List<Task> getAllParentTasks() {

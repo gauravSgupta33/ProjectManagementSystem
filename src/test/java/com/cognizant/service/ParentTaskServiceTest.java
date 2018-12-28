@@ -1,35 +1,36 @@
 package com.cognizant.service;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.hibernate.exception.ConstraintViolationException;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.dao.DataIntegrityViolationException;
 
-import com.cognizant.ProjectManagementSystem;
 import com.cognizant.entities.ParentTask;
-import com.cognizant.model.ParentTaskTestUtil;
-import com.cognizant.repository.ParentTaskRepository;;
+import com.cognizant.exception.AlreadyExistsException;
+import com.cognizant.repository.ParentTaskRepository;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = ProjectManagementSystem.class)
+@RunWith(MockitoJUnitRunner.class)
 public class ParentTaskServiceTest {
 
+	@InjectMocks
 	private ParentTaskService parentTaskSerivce;
 
+	@Mock
 	private ParentTaskRepository parentTaskRepositoryMock;
 
-	private static final Integer PARENT_ID = Integer.valueOf(5);
-    private static final String PARENT_TASK = "Planning";
+	private ParentTask parentTask;
 
 	@Before
 	public void setUp() {
@@ -47,27 +48,73 @@ public class ParentTaskServiceTest {
 	}
 
 	@Test
-	public void addParentTaskTest() {
-		ParentTask created = ParentTaskTestUtil.create(null, PARENT_TASK);
-        ParentTask persisted = ParentTaskTestUtil.createModelObject(PARENT_ID, PARENT_TASK);
-        
-        when(parentTaskRepositoryMock.save(any(ParentTask.class))).thenReturn(persisted);
-        //when(userRepositoryMock.save(created)).thenReturn(persisted);
+	public void testAddParentTaskTest() {
+		Integer parentTaskId = new Integer(1);
+		parentTask = new ParentTask();
+		parentTask.setParent_ID(parentTaskId);
+		parentTask.setParent_task("Parent Task");
 
-        
-        ParentTask returned = parentTaskSerivce.addParentTask(created);
+		Mockito.when(parentTaskRepositoryMock.save(Mockito.any(ParentTask.class))).thenReturn(parentTask);
 
-        ArgumentCaptor<ParentTask> userArgument = ArgumentCaptor.forClass(ParentTask.class);
-        verify(parentTaskRepositoryMock, times(1)).save(userArgument.capture());
-        //verifyNoMoreInteractions(userRepositoryMock);
+		ParentTask p1 = parentTaskSerivce.addParentTask(parentTask);
+		assertEquals(parentTask, p1);
+	}
 
-        assertParentTask(created, userArgument.getValue());
-        assertEquals(persisted, returned);
+	@Test(expected = AlreadyExistsException.class)
+	public void testAddParentTaskTestDuplicate() {
+		Integer parentTaskId = new Integer(1);
+		parentTask = new ParentTask();
+		parentTask.setParent_ID(parentTaskId);
+		parentTask.setParent_task("Parent Task");
+
+		Mockito.when(parentTaskRepositoryMock.save(Mockito.any(ParentTask.class)))
+				.thenThrow(AlreadyExistsException.class);
+
+		parentTaskSerivce.addParentTask(parentTask);
 	}
 	
+	@Test(expected = AlreadyExistsException.class)
+	public void testAddParentTaskTestDuplicateConstraintViolationException() {
+		Integer parentTaskId = new Integer(1);
+		parentTask = new ParentTask();
+		parentTask.setParent_ID(parentTaskId);
+		parentTask.setParent_task("Parent Task");
+
+		Mockito.when(parentTaskRepositoryMock.save(Mockito.any(ParentTask.class)))
+				.thenThrow(ConstraintViolationException.class);
+
+		parentTaskSerivce.addParentTask(parentTask);
+	}
 	
-	private void assertParentTask(ParentTask expected, ParentTask actual) {
-        assertEquals(expected.getParent_ID(), actual.getParent_ID());
-        assertEquals(expected.getParent_task(), actual.getParent_task());
-    }
+	@Test(expected = AlreadyExistsException.class)
+	public void testAddParentTaskTestDuplicateDataIntegrityViolationException () {
+		Integer parentTaskId = new Integer(1);
+		parentTask = new ParentTask();
+		parentTask.setParent_ID(parentTaskId);
+		parentTask.setParent_task("Parent Task");
+
+		Mockito.when(parentTaskRepositoryMock.save(Mockito.any(ParentTask.class)))
+				.thenThrow(DataIntegrityViolationException.class);
+
+		parentTaskSerivce.addParentTask(parentTask);
+	}
+
+
+
+	@Test
+	public void testGetAllParentTask() {
+		Integer parentTaskId = new Integer(1);
+		parentTask = new ParentTask();
+		parentTask.setParent_ID(parentTaskId);
+		parentTask.setParent_task("Parent Task");
+
+		List<ParentTask> parentTaskList = new ArrayList<ParentTask>();
+		parentTaskList.add(parentTask);
+		Mockito.when(parentTaskRepositoryMock.findAll()).thenReturn(parentTaskList);
+
+		List<ParentTask> retreivedParentTaskList = parentTaskSerivce.getAllParentTask();
+
+		assertEquals(parentTaskList, retreivedParentTaskList);
+
+	}
 }

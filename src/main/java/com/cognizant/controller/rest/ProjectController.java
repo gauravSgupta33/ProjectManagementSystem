@@ -21,9 +21,12 @@ import com.cognizant.service.ProjectService;
 @RestController
 @CrossOrigin
 public class ProjectController {
-	@Autowired
 	private ProjectService projectService;
-
+	
+	@Autowired
+	public void setProjectService(ProjectService projectService) {
+		this.projectService = projectService;
+	}
 
 	@PostMapping("/createProject")
 	public Project createProject(@Valid @RequestBody Project project) throws ResourceNotFoundException {
@@ -34,10 +37,10 @@ public class ProjectController {
 	public List<Project> getAllProjects() {
 		return projectService.getAllProjects();
 	}
-	
+
 	@PutMapping("/updateProject/{id}")
-    public ResponseEntity<Project> updateProject(@PathVariable(value = "id") int projectId,
-         @Valid @RequestBody Project projectDetails) throws ResourceNotFoundException {
-        return ResponseEntity.ok(projectService.updateProject(projectId, projectDetails));
-    }
+	public ResponseEntity<Project> updateProject(@PathVariable(value = "id") int projectId,
+			@Valid @RequestBody Project projectDetails) throws ResourceNotFoundException {
+		return ResponseEntity.ok(projectService.updateProject(projectId, projectDetails));
+	}
 }

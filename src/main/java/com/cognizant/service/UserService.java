@@ -19,7 +19,7 @@ import com.cognizant.repository.UserRepository;
 
 @Service("userService")
 public class UserService {
-	@Autowired
+
 	private UserRepository userRepository;
 	
 	@Autowired
@@ -57,17 +57,6 @@ public class UserService {
 	}
 
 	public User updateUser(int userId, User userDetails) throws ResourceNotFoundException {
-//		User user = userRepository.findById(userId)
-//				.orElseThrow(() -> new ResourceNotFoundException("Employee with ID " + userId + " Not Found"));
-//
-//		int count = userRepository.duplicateUserCount(userDetails.getEmpId(), user.getId());
-//		if (count > 0) {
-//			throw new ResourceNotFoundException("Employee with ID " + user.getEmpId() + " Already Exists");
-//		}
-
-//		user.setFirstName(userDetails.getFirstName());
-//		user.setLastName(userDetails.getLastName());
-//		user.setEmpId(userDetails.getEmpId());
 		try {
 			final User updatedUser = userRepository.save(userDetails);
 			return updatedUser;
@@ -81,9 +70,6 @@ public class UserService {
 
 	}
 
-	public User addOrUpdateProjectDetailsForUser(User userDetails) throws ResourceNotFoundException {
-		return null;
-	}
 
 	public boolean removeUser(User user) throws ResourceNotFoundException {
 		System.out.println("User id is " + user.getId());

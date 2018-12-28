@@ -10,8 +10,6 @@ import javax.persistence.Transient;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 
-import com.cognizant.entities.ParentTask.ParentTaskBuilder;
-
 @Entity
 @Table(name = "parent_task")
 public class ParentTask {
@@ -33,62 +31,6 @@ public class ParentTask {
 
 	public void setParent_task(String parent_task) {
 		this.parent_task = parent_task;
-	}
-
-	/**
-	 * Gets a builder which is used to create ParentTask objects.
-	 * 
-	 * @param firstName
-	 *            The first name of the created user.
-	 * @param lastName
-	 *            The last name of the created user.
-	 * @return A new Builder instance.
-	 */
-	public static ParentTaskBuilder getBuilder(String parentTaskName) {
-		return new ParentTaskBuilder(parentTaskName);
-	}
-
-	/**
-	 * Gets the full name of the person.
-	 * 
-	 * @return The full name of the person.
-	 */
-	@Transient
-	public String getName() {
-		StringBuilder name = new StringBuilder();
-
-		name.append(parent_task);
-		return name.toString();
-	}
-
-	@Override
-	public String toString() {
-		return ToStringBuilder.reflectionToString(this);
-	}
-
-	/**
-	 * A Builder class used to create new ParentTask objects.
-	 */
-	public static class ParentTaskBuilder {
-		ParentTask built;
-
-		/**
-		 * Creates a new Builder instance.
-		 * @param parentTaskName
-		 *            The parent task name of the created ParentTask object.
-		 */
-		ParentTaskBuilder(String parentTaskName) {
-			built = new ParentTask();
-			built.setParent_task(parentTaskName);
-		}
-
-		/**
-		 * Builds the new ParentTask object.
-		 * @return The created ParentTask object.
-		 */
-		public ParentTask build() {
-			return built;
-		}
 	}
 
 	/**

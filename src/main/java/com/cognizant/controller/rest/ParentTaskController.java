@@ -18,8 +18,13 @@ import com.cognizant.service.ParentTaskService;
 @CrossOrigin
 public class ParentTaskController {
 	
-	@Autowired
 	private ParentTaskService parentTaskService;
+	
+	@Autowired
+	public void setParentTaskService(ParentTaskService parentTaskService) {
+		this.parentTaskService = parentTaskService;
+		
+	}
 	
 	@GetMapping("/parentTasks")
     public List<ParentTask> getAllParentTasks() {

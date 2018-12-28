@@ -8,23 +8,22 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import com.cognizant.entities.Project;
-import com.cognizant.entities.User;
 import com.cognizant.exception.AlreadyExistsException;
 import com.cognizant.exception.ResourceNotFoundException;
 import com.cognizant.repository.ProjectRepository;
 
 @Service("projectService")
 public class ProjectService {
-	@Autowired
+	
 	private ProjectRepository projectRespository;
 
-	@Autowired
-	private UserService userService;
+//	@Autowired
+//	private UserService userService;
 	
 	@Autowired
-	public void setProjectService(ProjectRepository projectRespository, UserService userService) {
+	public void setProjectRepository(ProjectRepository projectRespository) {//, UserService userService) {
 		this.projectRespository = projectRespository;
-		this.userService = userService;
+//		this.userService = userService;
 	}
 
 	public List<Project> getAllProjects() {
@@ -32,9 +31,8 @@ public class ProjectService {
 	}
 
 	public Project addProject(Project project) throws ResourceNotFoundException {
-		User user = userService.findById(project.getUser().getId());
-		project.setUser(user);
-		
+//		User user = userService.findById(project.getUser().getId());
+//		project.setUser(user);
 		try {
 			return projectRespository.save(project);
 		} catch (ConstraintViolationException e) {

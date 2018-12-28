@@ -29,9 +29,9 @@ public class TaskCounterVO {
 		this.completedCount = completedCount;
 	}
 
-	@Override
-	public String toString() {
-		return "TaskCounterVO [taskCount=" + taskCount + ", projectId=" + projectId + ", completedCount="
-				+ completedCount + "]";
-	}
+//	@Override
+//	public String toString() {
+//		return "TaskCounterVO [taskCount=" + taskCount + ", projectId=" + projectId + ", completedCount="
+//				+ completedCount + "]";
+//	}
 }

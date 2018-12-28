@@ -22,8 +22,12 @@ import com.cognizant.service.UserService;
 @CrossOrigin
 public class UserController {
 	
-	@Autowired
 	private UserService userService;
+	
+	@Autowired
+	public void setUserService(UserService userService) {
+		this.userService = userService;
+	}
 	
 	
 	@GetMapping("/users")
@@ -46,13 +50,6 @@ public class UserController {
 	@PostMapping("/removeUser")
     public boolean removeUser(@Valid @RequestBody User user) throws ResourceNotFoundException {
         userService.removeUser(user);
-        return true;
-    }
-	
-
-	@PostMapping("/addOrUpdateProjectDetailsForUser")
-    public boolean addOrUpdate(@Valid @RequestBody User user) throws ResourceNotFoundException {
-        userService.addOrUpdateProjectDetailsForUser(user);
         return true;
     }
 }

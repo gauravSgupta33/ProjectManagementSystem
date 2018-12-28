@@ -14,7 +14,6 @@ import com.cognizant.repository.ParentTaskRepository;
 @Service("parentTaskService")
 public class ParentTaskService {
 
-	@Autowired
 	private ParentTaskRepository parentTaskRepository;
 	
 	@Autowired

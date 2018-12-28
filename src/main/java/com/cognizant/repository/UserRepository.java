@@ -3,7 +3,6 @@ package com.cognizant.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -11,7 +10,7 @@ import org.springframework.stereotype.Repository;
 import com.cognizant.entities.User;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecificationExecutor<User> {
+public interface UserRepository extends JpaRepository<User, Integer> {
 	
 	@Query(value="select distinct(Employee_ID), User_ID, First_Name, Last_Name from user", nativeQuery = true)
 	public List<User> findUniqueUsers();

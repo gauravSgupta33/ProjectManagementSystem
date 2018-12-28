@@ -1,115 +1,283 @@
 package com.cognizant.service;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
+import org.hibernate.exception.ConstraintViolationException;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 
-import com.cognizant.ProjectManagementSystem;
 import com.cognizant.entities.User;
+import com.cognizant.exception.AlreadyExistsException;
 import com.cognizant.exception.ResourceNotFoundException;
-import com.cognizant.model.UserTestUtil;
 import com.cognizant.repository.UserRepository;
 
-//@RunWith(SpringRunner.class)
-//@SpringBootTest(classes = ProjectManagementSystem.class)
+@RunWith(MockitoJUnitRunner.class)
 public class UserServiceTest {
+	@Mock
+	private UserRepository userRepository;
 
-	private UserService userService;
+	@InjectMocks
+	private static UserService userService = new UserService();
 
-	private UserRepository userRepositoryMock;
-	
-	private static final Integer USER_ID = Integer.valueOf(5);
-    private static final String FIRST_NAME = "Gaurav";
-    private static final int EMPLOYEE_ID = 223306;
-    private static final String FIRST_NAME_UPDATED = "GauravUpdated";
-    
-    private static final String LAST_NAME = "Gupta";
-    private static final String LAST_NAME_UPDATED = "GuptaUpdated";
+	private User user;
 
 	@Before
 	public void setUp() {
-		userRepositoryMock = mock(UserRepository.class);
+		userRepository = mock(UserRepository.class);
 		userService = new UserService();
-		userService.setUserRepository(userRepositoryMock);
+		userService.setUserRepository(userRepository);
 
 	}
 
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
+	@Test
+	public void addUser() {
+		Integer userId = new Integer(1);
+		user = new User();
+		user.setId(userId);
+		user.setFirstName("Gaurav");
+		user.setLastName("Gupta");
+		user.setEmpId(123456);
+		List<User> userList = new ArrayList<User>();
+		userList.add(user);
+
+		Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(user);
+
+		User retrunedUser = userService.addUser(user);
+		assertEquals(user, retrunedUser);
+
+	}
+
+	@Test(expected = AlreadyExistsException.class)
+	public void testAddUserWithDuplicateID() {
+		Integer userId = new Integer(1);
+		user = new User();
+		user.setId(userId);
+		user.setFirstName("Gaurav");
+		user.setLastName("Gupta");
+		user.setEmpId(123456);
+		Mockito.when(userRepository.duplicateEmpId(Mockito.any(Integer.class))).thenReturn(1);
+
+		userService.addUser(user);
 	}
 
 	@Test
-	public void addUserTest() {
-		User created = UserTestUtil.create(null, FIRST_NAME, LAST_NAME, EMPLOYEE_ID);
-        User persisted = UserTestUtil.createModelObject(USER_ID, FIRST_NAME, LAST_NAME, EMPLOYEE_ID);
-        
-        when(userRepositoryMock.save(any(User.class))).thenReturn(persisted);
-        //when(userRepositoryMock.save(created)).thenReturn(persisted);
+	public void updateUser() {
+		Integer userId = new Integer(1);
+		user = new User();
+		user.setId(userId);
+		user.setFirstName("Gaurav");
+		user.setLastName("Gupta");
+		user.setEmpId(123456);
 
-        
-        User returned = userService.addUser(created);
+		List<User> userList = new ArrayList<User>();
+		userList.add(user);
 
-        ArgumentCaptor<User> userArgument = ArgumentCaptor.forClass(User.class);
-        verify(userRepositoryMock, times(1)).save(userArgument.capture());
-        //verifyNoMoreInteractions(userRepositoryMock);
+		Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(user);
 
-        assertUser(created, userArgument.getValue());
-        assertEquals(persisted, returned);
+		userService.addUser(user);
+
+		User user1 = new User();
+		user1.setId(userId);
+		user1.setFirstName("Gaurav");
+		user1.setLastName("Gupta");
+		user1.setEmpId(123656);
+
+		Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(user1);
+
+		User updatedUser = userService.updateUser(user1.getId(), user1);
+
+		assertEquals(user1, updatedUser);
+
+	}
+
+	@Test(expected = AlreadyExistsException.class)
+	public void testUpdateUserConstraintViolationException() {
+		Integer userId = new Integer(1);
+		user = new User();
+		user.setId(userId);
+		user.setFirstName("Gaurav");
+		user.setLastName("Gupta");
+		user.setEmpId(123456);
+		Mockito.when(userRepository.save(Mockito.any(User.class))).thenThrow(ConstraintViolationException.class);
+
+		userService.updateUser(user.getId(), user);
 	}
 	
-	@Test
-    public void delete() throws ResourceNotFoundException {
-        User deleted = UserTestUtil.createModelObject(USER_ID, FIRST_NAME, LAST_NAME, EMPLOYEE_ID);
-        User persisted = UserTestUtil.createModelObject(USER_ID, FIRST_NAME, LAST_NAME, EMPLOYEE_ID);
-        when(userRepositoryMock.save(any(User.class))).thenReturn(persisted);
-       
-        //when(userRepositoryMock.findById(USER_ID).orElseThrow(() -> new ResourceNotFoundException("Employee with ID " + USER_ID + " Not Found"))).thenReturn(deleted);
+	@Test(expected = AlreadyExistsException.class)
+	public void testUpdateUserEmptyResultDataAccessException() {
+		Integer userId = new Integer(1);
+		user = new User();
+		user.setId(userId);
+		user.setFirstName("Gaurav");
+		user.setLastName("Gupta");
+		user.setEmpId(123456);
+		Mockito.when(userRepository.save(Mockito.any(User.class))).thenThrow(EmptyResultDataAccessException.class);
+
+		userService.updateUser(user.getId(), user);
+	}
+	
+	@Test(expected = AlreadyExistsException.class)
+	public void testUpdateUserDataIntegrityViolationException() {
+		Integer userId = new Integer(1);
+		user = new User();
+		user.setId(userId);
+		user.setFirstName("Gaurav");
+		user.setLastName("Gupta");
+		user.setEmpId(123456);
+		Mockito.when(userRepository.save(Mockito.any(User.class))).thenThrow(DataIntegrityViolationException.class);
+
+		userService.updateUser(user.getId(), user);
+	}
+	
+	
+	@Test(expected = AlreadyExistsException.class)
+	public void testAddUserConstraintViolationException() {
+		Integer userId = new Integer(1);
+		user = new User();
+		user.setId(userId);
+		user.setFirstName("Gaurav");
+		user.setLastName("Gupta");
+		user.setEmpId(123456);
+		Mockito.when(userRepository.save(Mockito.any(User.class))).thenThrow(ConstraintViolationException.class);
+
+		userService.addUser(user);
+	}
+	
+	@Test(expected = AlreadyExistsException.class)
+	public void testAddUserEmptyResultDataAccessException() {
+		Integer userId = new Integer(1);
+		user = new User();
+		user.setId(userId);
+		user.setFirstName("Gaurav");
+		user.setLastName("Gupta");
+		user.setEmpId(123456);
+		Mockito.when(userRepository.save(Mockito.any(User.class))).thenThrow(EmptyResultDataAccessException.class);
+
+		userService.addUser(user);
+	}
+	
+	@Test(expected = AlreadyExistsException.class)
+	public void testAddUserDataIntegrityViolationException() {
+		Integer userId = new Integer(1);
+		user = new User();
+		user.setId(userId);
+		user.setFirstName("Gaurav");
+		user.setLastName("Gupta");
+		user.setEmpId(123456);
+		Mockito.when(userRepository.save(Mockito.any(User.class))).thenThrow(DataIntegrityViolationException.class);
+
+		userService.addUser(user);
+	}
 
 
-        
-        userService.removeUser(deleted);
-        
-       // verify(userRepositoryMock, times(1)).findById(USER_ID).orElseThrow(() -> new ResourceNotFoundException("Employee with ID " + USER_ID + " Not Found"));
-        verify(userRepositoryMock, times(1)).delete(deleted);
-        //verifyNoMoreInteractions(userRepositoryMock);
-        
-        assertEquals(deleted, deleted);
-    }
+
+
+	@Test
+	public void testGetAllUsers() {
+
+		Integer userId = new Integer(1);
+
+		user = new User();
+		user.setId(userId);
+		user.setFirstName("Gaurav");
+		user.setLastName("Gupta");
+		user.setEmpId(123456);
+
+		List<User> userList = new ArrayList<User>();
+		userList.add(user);
+		Mockito.when(userRepository.findUniqueUsers()).thenReturn(userList);
+
+		List<User> retrivedUser = userService.getAllUsers();
+
+		assertEquals(userList, retrivedUser);
+
+	}
+	
+	
 	
 	@Test
-    public void update() throws ResourceNotFoundException {
-        User updated = UserTestUtil.create(USER_ID, FIRST_NAME_UPDATED, LAST_NAME_UPDATED, EMPLOYEE_ID);
-        Optional<User> user = Optional.of(UserTestUtil.createModelObject(USER_ID, FIRST_NAME, LAST_NAME, EMPLOYEE_ID));
-        
-        when(userRepositoryMock.findById(updated.getId())).thenReturn(user);
-        User u1  = user.get();
-        
-        User returned = userService.updateUser(u1.getId(), u1);
-        
-        verify(userRepositoryMock, times(1));
-    }
+	public void removeUser() {
+		Integer userId = new Integer(1);
+		user = new User();
+		user.setId(userId);
+		user.setFirstName("Gaurav");
+		user.setLastName("Gupta");
+		user.setEmpId(123456);
+
+		Mockito.doNothing().when(userRepository).delete(user);
+		userService.removeUser(user);
+		
+	}
+
 	
-	private void assertUser(User expected, User actual) {
-        assertEquals(expected.getId(), actual.getId());
-        assertEquals(expected.getFirstName(), actual.getFirstName());
-        assertEquals(expected.getLastName(), expected.getLastName());
-    }
+	@Test(expected = AlreadyExistsException.class)
+	public void testRemoveUserConstraintViolationException() {
+		Integer userId = new Integer(1);
+		user = new User();
+		user.setId(userId);
+		user.setFirstName("Gaurav");
+		user.setLastName("Gupta");
+		user.setEmpId(123456);
+		//Mockito.when(userRepository.save(Mockito.any(User.class))).thenThrow(ConstraintViolationException.class);
+		Mockito.doThrow(ConstraintViolationException.class).when(userRepository).delete(user);
+		userService.removeUser(user);
+	}
 	
+	@Test(expected = AlreadyExistsException.class)
+	public void testRemoveUserDataIntegrityViolationException() {
+		Integer userId = new Integer(1);
+		user = new User();
+		user.setId(userId);
+		user.setFirstName("Gaurav");
+		user.setLastName("Gupta");
+		user.setEmpId(123456);
+		//Mockito.when(userRepository.save(Mockito.any(User.class))).thenThrow(DataIntegrityViolationException.class);
+
+		Mockito.doThrow(DataIntegrityViolationException.class).when(userRepository).delete(user);
+		userService.removeUser(user);
+	}
+
+
+	@Test
+	public void testFindById() {
+		Integer userId = new Integer(1);
+		user = new User();
+		user.setId(userId);
+		user.setFirstName("Gaurav");
+		user.setLastName("Gupta");
+		user.setEmpId(123456);
+		//Mockito.when(userRepository.save(Mockito.any(User.class))).thenThrow(DataIntegrityViolationException.class);
+
+		Optional<User> u1 = Optional.of(user);
+		Mockito.when(userRepository.findById(Mockito.any(Integer.class))).thenReturn(u1);
+		User returnedUser = userService.findById(user.getId());
+		assertEquals(u1.get(), returnedUser);
+		
+	}
+	
+	@Test(expected = ResourceNotFoundException.class)
+	public void testFindByIdResourceNotFoundException() {
+		Integer userId = new Integer(1);
+		user = new User();
+		user.setId(userId);
+		user.setFirstName("Gaurav");
+		user.setLastName("Gupta");
+		user.setEmpId(123456);
+		Mockito.when(userRepository.findById(Mockito.any(Integer.class))).thenThrow(ResourceNotFoundException.class);
+		userService.findById(user.getId());
+	}
+
+
 }
