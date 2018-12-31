@@ -47,6 +47,10 @@ public class TaskService {
 	
 	private boolean between(Date date, Date dateStart, Date dateEnd) {
 		
+		if(dateStart == null && dateEnd == null) {
+			return true;
+		}
+
 	    if (date != null && dateStart != null && dateEnd != null) {
 			java.util.Date myDate = convertFromSQLDateToJAVADate(date);
 			java.util.Date utilStart = convertFromSQLDateToJAVADate(dateStart);
